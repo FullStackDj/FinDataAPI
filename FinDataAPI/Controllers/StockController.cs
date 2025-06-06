@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using FinDataAPI.Data;
+using FinDataAPI.Mappers;
+using FinDataAPI.DTOs.Stock;
 
 namespace FinDataAPI.Controllers;
 
@@ -15,7 +18,9 @@ public class StockController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        var stocks = _context.Stocks.ToList();
+        var stocks = _context.Stocks
+            .Select(s => s.ToStockDTO())
+            .ToList();
         
         return Ok(stocks);
     }
@@ -30,6 +35,15 @@ public class StockController : ControllerBase
             return NotFound();
         }
         
-        return Ok(stock);
+        return Ok(stock.ToStockDTO());
+    }
+
+    [HttpPost]
+    public IActionResult Create([FromBody] CreateStockRequestDTO stockDTO)
+    {
+        var stockModel = stockDTO.ToStockFromCreateDTO();
+        _context.Stocks.Add(stockModel);
+        _context.SaveChanges();
+        return CreatedAtAction(nameof(GetById), new { id = stockModel.Id},  stockModel.ToStockDTO());
     }
 }

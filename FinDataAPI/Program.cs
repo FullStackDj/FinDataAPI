@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using FinDataAPI.Data;
 using FinDataAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
