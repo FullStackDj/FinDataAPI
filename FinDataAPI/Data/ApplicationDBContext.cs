@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FinDataAPI.Models;
 
-namespace FinDataAPI.Models;
+namespace FinDataAPI.Data;
 
 public class ApplicationDBContext : DbContext
 {
