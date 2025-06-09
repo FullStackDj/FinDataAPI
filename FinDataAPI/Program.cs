@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using FinDataAPI.Data;
 using FinDataAPI.Models;
+using FinDataAPI.Interfaces;
+using FinDataAPI.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,8 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+builder.Services.AddScoped<IStockRepository, StockRepository>();
 
 var app = builder.Build();
 
