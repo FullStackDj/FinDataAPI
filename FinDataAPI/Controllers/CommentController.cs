@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Mappers;
+using FinDataAPI.DTOs.Comment;
 
 namespace FinDataAPI.Controllers;
 
@@ -9,10 +10,12 @@ namespace FinDataAPI.Controllers;
 public class CommentController : ControllerBase
 {
     private readonly ICommentRepository _commentRepo;
+    private readonly IStockRepository _stockRepo;
 
-    public CommentController(ICommentRepository commentRepo)
+    public CommentController(ICommentRepository commentRepo, IStockRepository stockRepo)
     {
         _commentRepo = commentRepo;
+        _stockRepo = stockRepo;
     }
 
     [HttpGet]
@@ -36,5 +39,18 @@ public class CommentController : ControllerBase
         }
 
         return Ok(comment.ToCommentDTO());
+    }
+
+    [HttpPost("{stockId}")]
+    public async Task<IActionResult> Create([FromRoute] int stockId, CreateCommentDTO commentDTO)
+    {
+        if (!await _stockRepo.StockExists(stockId))
+        {
+            return BadRequest("Stock don't exist");
+        }
+        
+        var commentModel = commentDTO.ToCommentFromCreate(stockId);
+        await _commentRepo.CreateAsync(commentModel);
+        return CreatedAtAction(nameof(GetById), new { id = commentModel}, commentModel.ToCommentDTO());
     }
 }
