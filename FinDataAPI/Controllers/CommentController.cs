@@ -24,7 +24,7 @@ public class CommentController : ControllerBase
         var comments = await _commentRepo.GetAllAsync();
 
         var commentDTO = comments.Select(s => s.ToCommentDTO());
-        
+
         return Ok(commentDTO);
     }
 
@@ -48,9 +48,23 @@ public class CommentController : ControllerBase
         {
             return BadRequest("Stock don't exist");
         }
-        
+
         var commentModel = commentDTO.ToCommentFromCreate(stockId);
         await _commentRepo.CreateAsync(commentModel);
-        return CreatedAtAction(nameof(GetById), new { id = commentModel}, commentModel.ToCommentDTO());
+        return CreatedAtAction(nameof(GetById), new { id = commentModel.Id }, commentModel.ToCommentDTO());
+    }
+
+    [HttpPut]
+    [Route("{id}")]
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateCommentRequestDTO updateDTO)
+    {
+        var comment = await _commentRepo.UpdateAsync(id, updateDTO.ToCommentFromUpdate());
+
+        if (comment == null)
+        {
+            return NotFound("Comment not found");
+        }
+
+        return Ok(comment.ToCommentDTO());
     }
 }
