@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using FinDataAPI.Models;
 
 namespace FinDataAPI.Data;
 
-public class ApplicationDBContext : DbContext
+public class ApplicationDBContext : IdentityDbContext<AppUser>
 {
     public ApplicationDBContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
     {
