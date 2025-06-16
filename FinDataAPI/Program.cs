@@ -1,11 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using FinDataAPI.Data;
-using FinDataAPI.Models;
-using FinDataAPI.Interfaces;
-using FinDataAPI.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using FinDataAPI.Data;
+using FinDataAPI.Interfaces;
+using FinDataAPI.Models;
+using FinDataAPI.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,7 +66,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseAuthorization(); //
+app.UseAuthorization();
 
 app.MapControllers();
 
