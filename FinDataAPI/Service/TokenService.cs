@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace FinDataAPI.Service;
 
@@ -11,40 +12,42 @@ public class TokenService : ITokenService
 {
     private readonly IConfiguration _config;
     private readonly SymmetricSecurityKey _key;
+    private readonly UserManager<AppUser> _userManager;
 
-    public TokenService(IConfiguration config)
+    public TokenService(IConfiguration config, UserManager<AppUser> userManager)
     {
         _config = config;
+        _userManager = userManager;
         var signingKey = _config["JWT:SigningKey"] ??
                          throw new InvalidOperationException("JWT:SigningKey not found in configuration.");
         _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
     }
 
-
-    public string CreateToken(AppUser user)
+    public async Task<string> CreateToken(AppUser user)
     {
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        if (user.Email == null) throw new ArgumentNullException(nameof(user.Email));
+        if (user.UserName == null) throw new ArgumentNullException(nameof(user.UserName));
+
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? throw new ArgumentNullException(nameof(user.Email))),
-            new Claim(JwtRegisteredClaimNames.GivenName,
-                user.UserName ?? throw new ArgumentNullException(nameof(user.UserName))),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Name, user.UserName)
         };
 
-        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
+        claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-        var tokenDescription = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.Now.AddDays(7),
-            SigningCredentials = creds,
-            Issuer = _config["JWT:Issuer"],
-            Audience = _config["JWT:Audience"]
-        };
+        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512);
 
-        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = new JwtSecurityToken(
+            issuer: _config["JWT:Issuer"],
+            audience: _config["JWT:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddDays(1),
+            signingCredentials: creds
+        );
 
-        var token = tokenHandler.CreateToken(tokenDescription);
-
-        return tokenHandler.WriteToken(token);
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

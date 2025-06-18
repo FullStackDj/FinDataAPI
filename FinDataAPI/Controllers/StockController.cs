@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore; 
+using Microsoft.EntityFrameworkCore;
 using FinDataAPI.Data;
 using FinDataAPI.Mappers;
 using FinDataAPI.DTOs.Stock;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FinDataAPI.Controllers;
 
@@ -14,6 +15,7 @@ public class StockController : ControllerBase
 {
     private readonly ApplicationDBContext _context;
     private readonly IStockRepository _stockRepo;
+
     public StockController(ApplicationDBContext context, IStockRepository stockRepo)
     {
         _stockRepo = stockRepo;
@@ -21,17 +23,18 @@ public class StockController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAll([FromQuery] QueryObject query)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
-        
+
         var stocks = await _stockRepo.GetAllAsync(query);
 
         var stockDTO = stocks.Select(s => s.ToStockDTO());
-        
+
         return Ok(stockDTO);
     }
 
@@ -42,14 +45,14 @@ public class StockController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var stock = await _stockRepo.GetByIdAsync(id);
 
         if (stock == null)
         {
             return NotFound();
         }
-        
+
         return Ok(stock.ToStockDTO());
     }
 
@@ -60,10 +63,10 @@ public class StockController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var stockModel = stockDTO.ToStockFromCreateDTO();
         await _stockRepo.CreateAsync(stockModel);
-        return CreatedAtAction(nameof(GetById), new { id = stockModel.Id},  stockModel.ToStockDTO());
+        return CreatedAtAction(nameof(GetById), new { id = stockModel.Id }, stockModel.ToStockDTO());
     }
 
     [HttpPut]
@@ -88,14 +91,14 @@ public class StockController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var stockModel = await _stockRepo.DeleteAsync(id);
 
         if (stockModel == null)
         {
             return NotFound();
         }
-        
+
         return NoContent();
     }
 }
