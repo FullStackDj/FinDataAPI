@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using FinDataAPI.DTOs.Account;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace FinDataAPI.Controllers;
 

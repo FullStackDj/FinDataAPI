@@ -1,5 +1,8 @@
-﻿namespace FinDataAPI.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
+namespace FinDataAPI.Models;
+
+[Table("Comments")]
 public class Comment
 {
     public int Id { get; set; }

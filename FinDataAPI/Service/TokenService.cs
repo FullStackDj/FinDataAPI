@@ -2,9 +2,9 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace FinDataAPI.Service;
 

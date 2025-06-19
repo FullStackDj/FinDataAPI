@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using FinDataAPI.Data;
 using FinDataAPI.Mappers;
 using FinDataAPI.DTOs.Stock;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Helpers;
-using Microsoft.AspNetCore.Authorization;
 
 namespace FinDataAPI.Controllers;
 
