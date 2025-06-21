@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore; 
+﻿using Microsoft.EntityFrameworkCore;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Models;
 using FinDataAPI.Data;
@@ -10,11 +10,12 @@ namespace FinDataAPI.Repository;
 public class StockRepository : IStockRepository
 {
     private readonly ApplicationDBContext _context;
+
     public StockRepository(ApplicationDBContext context)
     {
         _context = context;
     }
-    
+
     public async Task<Stock> CreateAsync(Stock stockModel)
     {
         await _context.Stocks.AddAsync(stockModel);
@@ -30,12 +31,12 @@ public class StockRepository : IStockRepository
         {
             return null;
         }
-        
+
         _context.Stocks.Remove(stockModel);
         await _context.SaveChangesAsync();
         return stockModel;
     }
-    
+
     public async Task<List<Stock>> GetAllAsync(QueryObject query)
     {
         var stocks = _context.Stocks.Include(c => c.Comments).AsQueryable();
@@ -59,13 +60,18 @@ public class StockRepository : IStockRepository
         }
 
         var skipNumber = (query.PageNumber - 1) * query.PageSize;
-        
+
         return await stocks.Skip(skipNumber).Take(query.PageSize).ToListAsync();
     }
 
     public async Task<Stock?> GetByIdAsync(int id)
     {
         return await _context.Stocks.Include(c => c.Comments).FirstOrDefaultAsync(i => i.Id == id);
+    }
+
+    public async Task<Stock?> GetBySymbolAsync(string symbol)
+    {
+        return await _context.Stocks.FirstOrDefaultAsync(s => s.Symbol == symbol);
     }
 
     public Task<bool> StockExists(int id)
@@ -81,16 +87,16 @@ public class StockRepository : IStockRepository
         {
             return null;
         }
-        
+
         existingStock.Symbol = stockDTO.Symbol;
         existingStock.CompanyName = stockDTO.CompanyName;
         existingStock.Purchase = stockDTO.Purchase;
         existingStock.LastDiv = stockDTO.LastDiv;
         existingStock.Industry = stockDTO.Industry;
         existingStock.MarketCap = stockDTO.MarketCap;
-        
+
         await _context.SaveChangesAsync();
-        
+
         return existingStock;
     }
 }

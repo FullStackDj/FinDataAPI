@@ -1,9 +1,9 @@
-﻿using FinDataAPI.Extensions;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Models;
+using FinDataAPI.Extensions;
 
 namespace FinDataAPI.Controllers;
 
@@ -29,7 +29,7 @@ public class PortfolioController : ControllerBase
     {
         var username = User.GetUsername();
 
-        if (string.IsNullOrEmpty(username))
+        if (username == null || string.IsNullOrEmpty(username))
         {
             return BadRequest("Username claim is missing.");
         }
@@ -41,7 +41,43 @@ public class PortfolioController : ControllerBase
             return NotFound("User not found.");
         }
 
-        var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
+        var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser!);
         return Ok(userPortfolio);
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> AddPortfolio(string symbol)
+    {
+        var username = User.GetUsername();
+        var appUser = await _userManager.FindByNameAsync(username);
+        var stock = await _stockRepo.GetBySymbolAsync(symbol);
+
+        if (stock == null)
+        {
+            return BadRequest("Stock not found.");
+        }
+
+        var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
+
+        if (userPortfolio.Any(e => e.Symbol.ToLower() == symbol.ToLower()))
+        {
+            return BadRequest("Cannot add same symbol.");
+        }
+
+        var portfolioModel = new Portfolio
+        {
+            StockId = stock.Id,
+            AppUserId = appUser.Id,
+        };
+
+        await _portfolioRepo.CreateAsync(portfolioModel);
+
+        if (portfolioModel == null)
+        {
+            return StatusCode(500, "Could not create portfolio.");
+        }
+
+        return Created();
     }
 }

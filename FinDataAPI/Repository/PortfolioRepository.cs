@@ -20,12 +20,19 @@ public class PortfolioRepository : IPortfolioRepository
             .Select(stock => new Stock
             {
                 Id = stock.StockId,
-                Symbol = stock.Stock.Symbol,
+                Symbol = stock.Stock!.Symbol,
                 CompanyName = stock.Stock.CompanyName,
                 Purchase = stock.Stock.Purchase,
                 LastDiv = stock.Stock.LastDiv,
                 Industry = stock.Stock.Industry,
                 MarketCap = stock.Stock.MarketCap,
             }).ToListAsync();
+    }
+
+    public async Task<Portfolio> CreateAsync(Portfolio portfolio)
+    {
+        await _context.Portfolios.AddAsync(portfolio);
+        await _context.SaveChangesAsync();
+        return portfolio;
     }
 }

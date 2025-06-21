@@ -7,7 +7,7 @@ public static class ClaimsExtensions
     public static string? GetUsername(this ClaimsPrincipal user)
     {
         var claim = user.Claims
-            .SingleOrDefault(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname");
+            .SingleOrDefault(x => x.Type == ClaimTypes.Name);
 
         return claim?.Value;
     }
