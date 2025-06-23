@@ -12,11 +12,12 @@ public static class CommentMapper
             Id = commentModel.Id,
             Title = commentModel.Title,
             Content = commentModel.Content,
-            CreatedOn = commentModel.CreatedOn.Date,
+            CreatedOn = commentModel.CreatedOn,
+            CreatedBy = commentModel.AppUser.UserName,
             StockId = commentModel.StockId,
         };
-    }    
-    
+    }
+
     public static Comment ToCommentFromCreate(this CreateCommentDTO commentDTO, int stockId)
     {
         return new Comment
@@ -26,7 +27,7 @@ public static class CommentMapper
             StockId = stockId,
         };
     }
-    
+
     public static Comment ToCommentFromUpdate(this UpdateCommentRequestDTO commentDTO)
     {
         return new Comment

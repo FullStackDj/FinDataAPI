@@ -8,6 +8,7 @@ namespace FinDataAPI.Repository;
 public class CommentRepository : ICommentRepository
 {
     private readonly ApplicationDBContext _context;
+
     public CommentRepository(ApplicationDBContext context)
     {
         _context = context;
@@ -22,12 +23,12 @@ public class CommentRepository : ICommentRepository
 
     public async Task<List<Comment>> GetAllAsync()
     {
-        return await _context.Comments.ToListAsync();
+        return await _context.Comments.Include(a => a.AppUser).ToListAsync();
     }
 
     public async Task<Comment?> GetByIdAsync(int id)
     {
-        return await _context.Comments.FindAsync(id);
+        return await _context.Comments.Include(a => a.AppUser).FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<Comment?> UpdateAsync(int id, Comment commentModel)
@@ -55,7 +56,7 @@ public class CommentRepository : ICommentRepository
         {
             return null;
         }
-        
+
         _context.Comments.Remove(commentModel);
         await _context.SaveChangesAsync();
         return commentModel;

@@ -2,6 +2,9 @@
 using FinDataAPI.Interfaces;
 using FinDataAPI.Mappers;
 using FinDataAPI.DTOs.Comment;
+using FinDataAPI.Extensions;
+using FinDataAPI.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace FinDataAPI.Controllers;
 
@@ -11,11 +14,14 @@ public class CommentController : ControllerBase
 {
     private readonly ICommentRepository _commentRepo;
     private readonly IStockRepository _stockRepo;
+    private readonly UserManager<AppUser> _userManager;
 
-    public CommentController(ICommentRepository commentRepo, IStockRepository stockRepo)
+    public CommentController(ICommentRepository commentRepo, IStockRepository stockRepo,
+        UserManager<AppUser> userManager)
     {
         _commentRepo = commentRepo;
         _stockRepo = stockRepo;
+        _userManager = userManager;
     }
 
     [HttpGet]
@@ -25,7 +31,7 @@ public class CommentController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var comments = await _commentRepo.GetAllAsync();
 
         var commentDTO = comments.Select(s => s.ToCommentDTO());
@@ -40,7 +46,7 @@ public class CommentController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var comment = await _commentRepo.GetByIdAsync(id);
 
         if (comment == null)
@@ -58,13 +64,17 @@ public class CommentController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         if (!await _stockRepo.StockExists(stockId))
         {
             return BadRequest("Stock don't exist");
         }
 
+        var username = User.GetUsername();
+        var appUser = await _userManager.FindByNameAsync(username);
+
         var commentModel = commentDTO.ToCommentFromCreate(stockId);
+        commentModel.AppUserId = appUser.Id;
         await _commentRepo.CreateAsync(commentModel);
         return CreatedAtAction(nameof(GetById), new { id = commentModel.Id }, commentModel.ToCommentDTO());
     }
@@ -77,7 +87,7 @@ public class CommentController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var comment = await _commentRepo.UpdateAsync(id, updateDTO.ToCommentFromUpdate());
 
         if (comment == null)
@@ -96,14 +106,14 @@ public class CommentController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
+
         var commentModel = await _commentRepo.DeleteAsync(id);
 
         if (commentModel == null)
         {
             return NotFound("Comment don't exist");
         }
-        
+
         return Ok(commentModel);
     }
 }
