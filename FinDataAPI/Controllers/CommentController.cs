@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using FinDataAPI.Interfaces;
 using FinDataAPI.Mappers;
 using FinDataAPI.DTOs.Comment;
 using FinDataAPI.Extensions;
+using FinDataAPI.Helpers;
 using FinDataAPI.Models;
 
 namespace FinDataAPI.Controllers;
@@ -16,7 +18,7 @@ public class CommentController : ControllerBase
     private readonly IStockRepository _stockRepo;
     private readonly UserManager<AppUser> _userManager;
     private readonly IFMPService _fmpService;
-    
+
     public CommentController(ICommentRepository commentRepo, IStockRepository stockRepo,
         UserManager<AppUser> userManager, IFMPService fmpService)
     {
@@ -27,14 +29,15 @@ public class CommentController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [Authorize]
+    public async Task<IActionResult> GetAll([FromQuery] CommentQueryObject queryObject)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var comments = await _commentRepo.GetAllAsync();
+        var comments = await _commentRepo.GetAllAsync(queryObject);
 
         var commentDTO = comments.Select(s => s.ToCommentDTO());
 
