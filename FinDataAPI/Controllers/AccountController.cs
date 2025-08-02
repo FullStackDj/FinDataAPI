@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using FinDataAPI.DTOs.Account;
 using FinDataAPI.Interfaces;
@@ -31,7 +30,7 @@ public class AccountController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == loginDTO.Username.ToLower());
+        var user = _userManager.Users.FirstOrDefault(x => x.UserName == loginDTO.Username.ToLower());
 
         if (user == null)
         {
@@ -48,7 +47,7 @@ public class AccountController : ControllerBase
         return Ok(
             new NewUserDTO
             {
-                Username = user.UserName ?? throw new Exception("UserName is null"),
+                UserName = user.UserName ?? throw new Exception("UserName is null"),
                 Email = user.Email ?? throw new Exception("Email is null"),
                 Token = await _tokenService.CreateToken(user)
             }
@@ -85,7 +84,7 @@ public class AccountController : ControllerBase
                     return Ok(
                         new NewUserDTO
                         {
-                            Username = appUser.UserName ?? throw new Exception("UserName is null"),
+                            UserName = appUser.UserName ?? throw new Exception("UserName is null"),
                             Email = appUser.Email ?? throw new Exception("Email is null"),
                             Token = await _tokenService.CreateToken(appUser)
                         }
